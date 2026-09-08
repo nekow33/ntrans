@@ -262,16 +262,42 @@ impl TranslatorApp {
     // ---------------- UI 子区域 ----------------
 
     /// 顶部菜单栏：设置 / 历史（左对齐）。
+    /// “设置”不再弹出居中的窗口，而是在按钮下方展开一个下拉式设置面板。
     fn menu_bar_ui(&mut self, ui: &mut egui::Ui) {
         let tr = self.texts();
-        ui.horizontal(|ui| {
-            if ui.selectable_label(self.show_settings, tr.settings).clicked() {
-                self.show_settings = !self.show_settings;
-            }
-            if ui.selectable_label(self.show_history, tr.history).clicked() {
-                self.show_history = !self.show_history;
-            }
-        });
+        let settings_resp = ui
+            .horizontal(|ui| {
+                if ui.selectable_label(self.show_history, tr.history).clicked() {
+                    self.show_history = !self.show_history;
+                }
+                let resp = ui.selectable_label(self.show_settings, tr.settings);
+                if resp.clicked() {
+                    self.show_settings = !self.show_settings;
+                }
+                resp
+            })
+            .inner;
+
+        if self.show_settings {
+            let ctx = ui.ctx().clone();
+            let mut open = self.show_settings;
+            let frame = egui::Frame::popup(ui.style()).inner_margin(egui::Margin::symmetric(10, 8));
+            egui::Popup::new(
+                egui::Id::new("settings_popup"),
+                ctx,
+                &settings_resp,
+                settings_resp.layer_id,
+            )
+            .open_bool(&mut open)
+            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+            .width(360.0)
+            .gap(2.0)
+            .frame(frame)
+            .show(|ui| {
+                self.settings_ui(ui);
+            });
+            self.show_settings = open;
+        }
     }
 
     /// 菜单栏下方的控制条：引擎 / 语言 / 翻译方向。
@@ -612,7 +638,7 @@ impl TranslatorApp {
         }
     }
 
-    fn run_ui(&mut self, root: &mut egui::Ui, ctx: &egui::Context) {
+    fn run_ui(&mut self, root: &mut egui::Ui, _ctx: &egui::Context) {
         let bg = root.visuals().panel_fill;
         let frame = |margin: egui::Margin| egui::Frame::default().fill(bg).inner_margin(margin);
         egui::Panel::top("menu_bar")
@@ -662,22 +688,6 @@ impl TranslatorApp {
             .show(root, |ui| {
                 self.central_body(ui);
             });
-
-        if self.show_settings {
-            let mut open = true;
-            egui::Window::new(self.texts().settings_window)
-                .open(&mut open)
-                .collapsible(false)
-                .resizable(false)
-                .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
-                .show(ctx, |ui| {
-                    ui.set_width(360.0);
-                    self.settings_ui(ui);
-                });
-            if !open {
-                self.show_settings = false;
-            }
-        }
     }
 
     fn pump_tray(&mut self, ctx: &egui::Context) {

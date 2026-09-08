@@ -76,8 +76,7 @@ pub struct Texts {
     pub fill_back: &'static str,
     pub copy_translation: &'static str,
     pub delete: &'static str,
-    // 设置窗口
-    pub settings_window: &'static str,
+    // 设置
     pub section_language: &'static str,
     pub ui_language: &'static str,
     pub section_general: &'static str,
@@ -122,7 +121,6 @@ pub const EN: Texts = Texts {
     fill_back: "Refill",
     copy_translation: "Copy",
     delete: "Delete",
-    settings_window: "Settings",
     section_language: "Interface language",
     ui_language: "Language",
     section_general: "General",
@@ -166,7 +164,6 @@ pub const ZH: Texts = Texts {
     fill_back: "回填",
     copy_translation: "复制译文",
     delete: "删除",
-    settings_window: "设置",
     section_language: "界面语言",
     ui_language: "语言",
     section_general: "常规",
